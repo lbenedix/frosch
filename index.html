@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Frog Affiliate Generator</title>
+
+    <!-- 🐸 PWA META — installable, fullscreen, themed -->
+    <meta name="theme-color" content="#2c5364">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Frog Smash">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon"
+          href="data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 rx=%2242%22 fill=%22%232c5364%22/><text x=%2250%25%22 y=%2272%25%22 font-size=%22130%22 text-anchor=%22middle%22>🐸</text></svg>">
+
+    <!-- FROG FAVICON 🐸 -->
+    <link rel="icon"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐸</text></svg>">
+
+    <link rel="stylesheet" href="./assets/css/app.css">
+
+</head>
+<body>
+
+<div class="card">
+    <!-- FROG SCENE 🐸 -->
+    <div class="frog-scene" aria-hidden="true">
+        <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+            <!-- Lily pad shadow under frog -->
+            <ellipse class="pad" cx="150" cy="145" rx="70" ry="6"/>
+
+            <!-- 🪷 Lily pad (visible only in game mode) — frog sits on top -->
+            <g class="lily-pad">
+                <!-- Pad body: ellipse with classic V-notch on the right -->
+                <path d="M 150,142 L 246,134 A 96,18 0 1 0 246,150 Z"
+                      fill="#43a047" stroke="#1b5e20" stroke-width="1.5"/>
+                <!-- Subtle highlight on the pad surface -->
+                <ellipse cx="135" cy="138" rx="55" ry="5" fill="#66bb6a" opacity="0.6"/>
+                <!-- Vein lines radiating from the notch -->
+                <g stroke="#2e7d32" stroke-width="1" opacity="0.55" fill="none" stroke-linecap="round">
+                    <path d="M 150,142 L 70,138"/>
+                    <path d="M 150,142 L 80,148"/>
+                    <path d="M 150,142 L 95,128"/>
+                    <path d="M 150,142 L 110,154"/>
+                </g>
+                <!-- Water lily flower on the left edge -->
+                <g transform="translate(62,135)">
+                    <ellipse cx="0" cy="0" rx="10" ry="3" fill="#388e3c"/>
+                    <!-- petals -->
+                    <ellipse cx="-4" cy="-4" rx="4" ry="6" fill="#f8bbd0" transform="rotate(-30 -4 -4)"/>
+                    <ellipse cx="0" cy="-5" rx="4" ry="6" fill="#f48fb1"/>
+                    <ellipse cx="4" cy="-4" rx="4" ry="6" fill="#f8bbd0" transform="rotate(30 4 -4)"/>
+                    <!-- center -->
+                    <circle cx="0" cy="-3" r="2.2" fill="#fff59d"/>
+                </g>
+                <!-- Tiny ripples on the water beside the pad -->
+                <g stroke="#90caf9" stroke-width="1" fill="none" opacity="0.5" stroke-linecap="round">
+                    <path d="M 240,158 q 8,-3 16,0"/>
+                    <path d="M 30,160  q 8,-3 16,0"/>
+                </g>
+            </g>
+
+            <!-- Frog body (SVG) -->
+            <g class="frog-body">
+                <!-- back legs -->
+                <ellipse cx="95" cy="128" rx="28" ry="12" fill="#2e7d32"/>
+                <ellipse cx="205" cy="128" rx="28" ry="12" fill="#2e7d32"/>
+
+                <!-- body -->
+                <ellipse cx="150" cy="108" rx="62" ry="36" fill="#4caf50"/>
+                <!-- belly -->
+                <ellipse id="belly" class="belly" cx="150" cy="118" rx="42" ry="20" fill="#c8e6a0"/>
+
+                <!-- head -->
+                <ellipse cx="150" cy="80" rx="58" ry="38" fill="#4caf50"/>
+
+                <!-- mouth -->
+                <path d="M120,92 Q150,108 180,92" stroke="#1b5e20" stroke-width="2.5" fill="none"
+                      stroke-linecap="round"/>
+
+                <!-- cheeks -->
+                <circle cx="112" cy="92" r="4" fill="#ff8aa8" opacity="0.6"/>
+                <circle cx="188" cy="92" r="4" fill="#ff8aa8" opacity="0.6"/>
+
+                <!-- eyes (no blinking - frogs don't blink!) -->
+                <g class="frog-eyes">
+                    <circle cx="122" cy="52" r="18" fill="#4caf50"/>
+                    <circle cx="178" cy="52" r="18" fill="#4caf50"/>
+                    <circle cx="122" cy="52" r="13" fill="#ffffff"/>
+                    <circle cx="178" cy="52" r="13" fill="#ffffff"/>
+                    <circle id="pupilL" cx="124" cy="54" r="6" fill="#111"/>
+                    <circle id="pupilR" cx="180" cy="54" r="6" fill="#111"/>
+                    <circle cx="126" cy="50" r="2" fill="#fff"/>
+                    <circle cx="182" cy="50" r="2" fill="#fff"/>
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <div class="affiliate-ui">
+        <input type="text" id="inputLink" aria-label="Amazon-Link" placeholder="Amazon-Link einfügen...">
+
+        <button id="generateBtn">✨ Generiere</button>
+
+        <div id="output"></div>
+    </div>
+</div>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Theme umschalten" title="Theme umschalten">🌓</button>
+<button class="sound-toggle" id="soundToggle" aria-label="Sound umschalten" title="Sound an/aus">🔇</button>
+<button class="install-btn" id="installBtn" title="Als App installieren">📲 Installieren</button>
+
+
+<div id="toast" class="toast">Kopiert 🐸</div>
+
+<!-- 📊 GAME HUD -->
+<div class="hud" aria-hidden="true">
+    <div class="hud-row"><span class="label">⏱️ Zeit</span><span class="value" id="hudTime">30</span></div>
+    <div class="hud-row"><span class="label">🎯 Du</span><span class="value" id="hudScore">0</span></div>
+    <div class="hud-row"><span class="label">🐸 Frosch</span><span class="value" id="hudFrog">0</span></div>
+    <div class="hud-row combo"><span class="label">🔥 Combo</span><span class="value" id="hudCombo">×1</span></div>
+    <div class="hud-row"><span class="label">🏆 Best</span><span class="value" id="hudBest">0</span></div>
+    <div class="hud-row" id="hudLead"><span class="label">⚔️ Stand</span><span class="value" id="hudLeadVal">±0</span>
+    </div>
+</div>
+
+<!-- 🏁 Game-over modal -->
+<div class="modal-backdrop" id="gameOverModal">
+    <div class="modal">
+        <h2 id="moTitle">Zeit abgelaufen!</h2>
+        <p class="subtitle" id="moSubtitle">30 Sekunden Mensch gegen Frosch</p>
+        <div class="scores">
+            <div class="col" id="moPlayerCol">
+                <div class="label">🎯 Du</div>
+                <div class="value" id="moPlayer">0</div>
+            </div>
+            <div class="col" id="moFrogCol">
+                <div class="label">🐸 Frosch</div>
+                <div class="value" id="moFrog">0</div>
+            </div>
+        </div>
+        <div class="stats" id="moStats">Beste Combo: ×1 · Highscore: 0</div>
+        <div class="actions">
+            <button class="btn-share" id="moShare">📤 Teilen</button>
+            <button class="btn-replay" id="moReplay">🔄 Nochmal</button>
+            <button class="btn-exit" id="moExit">🚪 Beenden</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🪰 Free-roaming fly and tongue overlay -->
+<svg class="tongue-overlay" aria-hidden="true">
+    <path id="tonguePath" class="tongue-path" d=""/>
+    <circle id="tongueTip" class="tongue-tip" r="6" cx="0" cy="0"/>
+</svg>
+<div id="fly" class="fly">🪰</div>
+<div id="splat" class="splat">💥</div>
+
+<script src="./assets/js/affiliate.js" defer></script>
+<script src="./assets/js/pwa.js" defer></script>
+<script src="./assets/js/app.js" defer></script>
+
+
+</body>
+</html>

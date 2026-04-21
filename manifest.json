@@ -1,0 +1,26 @@
+{
+	"name": "Frog Smash - Mensch vs. Frosch",
+	"short_name": "Frog Smash",
+	"description": "Geheimes 30-Sekunden-Duell zwischen dir und einem hungrigen Frosch.",
+	"start_url": ".",
+	"scope": ".",
+	"display": "fullscreen",
+	"orientation": "any",
+	"background_color": "#0f2027",
+	"theme_color": "#2c5364",
+	"categories": ["games", "entertainment"],
+	"icons": [
+		{
+			"src": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 192 192\"><rect width=\"192\" height=\"192\" rx=\"42\" fill=\"%232c5364\"/><text x=\"50%25\" y=\"72%25\" font-size=\"130\" text-anchor=\"middle\">🐸</text></svg>",
+			"sizes": "192x192",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		},
+		{
+			"src": "data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" rx=\"112\" fill=\"%232c5364\"/><text x=\"50%25\" y=\"72%25\" font-size=\"350\" text-anchor=\"middle\">🐸</text></svg>",
+			"sizes": "512x512",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		}
+	]
+}

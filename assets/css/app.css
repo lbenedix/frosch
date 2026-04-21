@@ -1,0 +1,796 @@
+:root {
+	--bg1: #0f2027;
+	--bg2: #203a43;
+	--bg3: #2c5364;
+	--card: rgba(30, 42, 47, 0.75);
+	--text: #e8f5e9;
+	--muted: #bde7c6;
+	--input: rgba(38, 50, 56, 0.8);
+	--border: rgba(76, 175, 80, 0.3);
+	--accent: #4caf50;
+	--accent-hover: #3d8b40;
+	--result: rgba(46, 61, 51, 0.6);
+	--toast: rgba(0, 0, 0, 0.75);
+}
+
+body.light {
+	--bg1: #c8e6c9;
+	--bg2: #a5d6a7;
+	--bg3: #81c784;
+	--card: rgba(255, 255, 255, 0.85);
+	--text: #1b1b1b;
+	--muted: #2e7d32;
+	--input: rgba(245, 245, 245, 0.9);
+	--border: rgba(46, 125, 50, 0.3);
+	--accent: #2e7d32;
+	--accent-hover: #1b5e20;
+	--result: rgba(241, 248, 233, 0.9);
+	--toast: rgba(0, 0, 0, 0.75);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family:
+		system-ui,
+		-apple-system,
+		Segoe UI,
+		sans-serif;
+	color: var(--text);
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+	transition:
+		background 0.8s ease,
+		color 0.5s ease;
+	overflow: hidden;
+}
+
+/* 👋 Waving-hand cursor appears only when the fly is within reach */
+body.fly-nearby {
+	cursor:
+		url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><text y="28" font-size="28">👋</text></svg>')
+		8 8,
+		auto;
+}
+
+/* Keep native cursors where they matter for usability */
+input,
+button,
+a,
+.theme-toggle,
+.sound-toggle {
+	cursor: pointer;
+}
+input[type="text"] {
+	cursor: text;
+}
+
+.card {
+	width: 95%;
+	max-width: 520px;
+	padding: 28px;
+	border-radius: 24px;
+	background: var(--card);
+	backdrop-filter: blur(14px);
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+	text-align: center;
+	animation: pop 0.5s ease;
+	transition:
+		padding 0.6s ease,
+		background 0.6s ease,
+		box-shadow 0.6s ease;
+}
+/* When the secret game is unlocked, the Amazon affiliate UI fades away.
+           The frog scene stays — it's the star of the show now. */
+.card.game-mode {
+	background: transparent;
+	box-shadow: none;
+	backdrop-filter: none;
+	padding: 0;
+}
+.card.game-mode .affiliate-ui {
+	opacity: 0;
+	max-height: 0;
+	margin: 0;
+	transform: translateY(-12px);
+	pointer-events: none;
+	overflow: hidden;
+}
+.affiliate-ui {
+	transition:
+		opacity 0.5s ease,
+		max-height 0.6s ease,
+		transform 0.5s ease,
+		margin 0.6s ease;
+	max-height: 400px;
+}
+
+@keyframes pop {
+	from {
+		transform: translateY(20px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+/* 🐸 FROG SCENE */
+.frog-scene {
+	position: relative;
+	display: block;
+	margin: 0 auto 10px;
+	height: 150px;
+	width: 300px;
+	overflow: visible;
+}
+
+.frog-scene svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Frog body bounce */
+.frog-body {
+	transform-origin: 150px 130px;
+	animation: bounce 1.8s ease-in-out infinite;
+	transition: transform 0.12s ease-out;
+}
+
+@keyframes bounce {
+	0%,
+	100% {
+		transform: translateY(0) scaleY(1);
+	}
+	45% {
+		transform: translateY(-10px) scaleY(1.02);
+	}
+	55% {
+		transform: translateY(-10px) scaleY(1.02);
+	}
+}
+
+/* Anticipation crouch right before tongue fires */
+.frog-body.crouch {
+	animation: crouch 0.15s ease-out forwards;
+}
+@keyframes crouch {
+	0% {
+		transform: translateY(0) scale(1, 1);
+	}
+	100% {
+		transform: translateY(4px) scale(1.08, 0.9);
+	}
+}
+
+/* Satisfied belly gulp after eating — pulse driven from JS, see triggerGulp() */
+.belly {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+	.frog-body,
+	.pad {
+		animation: none !important;
+	}
+	.card {
+		animation: none !important;
+	}
+	* {
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* Theme toggle button in corner */
+.theme-toggle {
+	position: fixed;
+	top: 16px;
+	right: 16px;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	margin: 0;
+	border-radius: 50%;
+	border: 1px solid var(--border);
+	background: var(--card);
+	color: var(--text);
+	cursor: pointer;
+	font-size: 18px;
+	backdrop-filter: blur(10px);
+	z-index: 60;
+	transition:
+		transform 0.25s ease,
+		background 0.3s ease;
+}
+.theme-toggle:hover {
+	transform: rotate(20deg) scale(1.05);
+}
+
+/* 🔊 Sound toggle, sits next to the theme toggle.
+           Hidden until the secret game has been unlocked. */
+.sound-toggle {
+	position: fixed;
+	top: 16px;
+	right: 64px;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	margin: 0;
+	border-radius: 50%;
+	border: 1px solid var(--border);
+	background: var(--card);
+	color: var(--text);
+	cursor: pointer;
+	font-size: 18px;
+	backdrop-filter: blur(10px);
+	z-index: 60;
+	display: none;
+	transition:
+		transform 0.2s ease,
+		background 0.3s ease;
+}
+.sound-toggle.in-game {
+	display: inline-block;
+}
+.sound-toggle:hover {
+	transform: scale(1.08);
+}
+.sound-toggle.muted {
+	opacity: 0.55;
+}
+
+/* Lily pad shadow */
+.pad {
+	fill: rgba(0, 0, 0, 0.18);
+	animation: padSquish 1.8s ease-in-out infinite;
+	transform-origin: 150px 145px;
+}
+@keyframes padSquish {
+	0%,
+	100% {
+		transform: scaleX(1);
+	}
+	50% {
+		transform: scaleX(0.85);
+	}
+}
+
+/* 🪷 Lily pad — appears once the game starts */
+.lily-pad {
+	opacity: 0;
+	transform: translateY(8px) scale(0.85);
+	transform-origin: 150px 142px;
+	transform-box: fill-box;
+	transition:
+		opacity 0.6s ease,
+		transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.card.game-mode .lily-pad {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+}
+
+/* 🪰 Fly flies all over the viewport */
+.fly {
+	position: fixed;
+	top: 0;
+	left: 0;
+	font-size: 22px;
+	pointer-events: none;
+	will-change: transform;
+	z-index: 50;
+	filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+	transition: opacity 0.15s ease;
+}
+
+/* 💥 Splat effect when the fly is squashed */
+.splat {
+	--sx: -9999px;
+	--sy: -9999px;
+	position: fixed;
+	top: 0;
+	left: 0;
+	font-size: 32px;
+	pointer-events: none;
+	z-index: 51;
+	opacity: 0;
+	transform: translate(var(--sx), var(--sy)) scale(0.3);
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+.splat.active {
+	animation: splat 0.6s ease-out forwards;
+}
+@keyframes splat {
+	0% {
+		opacity: 0;
+		transform: translate(var(--sx), var(--sy)) scale(0.3) rotate(0deg);
+	}
+	20% {
+		opacity: 1;
+		transform: translate(var(--sx), var(--sy)) scale(1.6) rotate(15deg);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(var(--sx), var(--sy)) scale(2) rotate(25deg);
+	}
+}
+
+/* ✨ Particles flying off on kill */
+.particle {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	pointer-events: none;
+	z-index: 52;
+	will-change: transform, opacity;
+}
+
+/* 💯 Floating score popup */
+.score-pop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	font-weight: 800;
+	font-size: 22px;
+	color: #ffd54a;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+	pointer-events: none;
+	z-index: 55;
+	will-change: transform, opacity;
+	font-family: system-ui, sans-serif;
+}
+
+/* 💬 Frog reactions (Mjam! Mist! Burp!) */
+.frog-say {
+	position: fixed;
+	top: 0;
+	left: 0;
+	font-weight: 700;
+	font-size: 18px;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.55);
+	padding: 4px 10px;
+	border-radius: 12px;
+	pointer-events: none;
+	z-index: 55;
+	will-change: transform, opacity;
+	max-width: calc(100vw - 24px);
+	text-align: center;
+	line-height: 1.25;
+}
+.frog-say::after {
+	content: "";
+	position: absolute;
+	bottom: -6px;
+	left: 20px;
+	border: 6px solid transparent;
+	border-top-color: rgba(0, 0, 0, 0.55);
+	border-bottom: 0;
+}
+
+/* 📊 HUD */
+.hud {
+	position: fixed;
+	top: 16px;
+	left: 16px;
+	z-index: 60;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-family: system-ui, -apple-system, sans-serif;
+	font-weight: 600;
+	font-size: 14px;
+	user-select: none;
+	pointer-events: none;
+	/* Hidden until the secret game is unlocked */
+	opacity: 0;
+	transform: translateX(-20px);
+	transition:
+		opacity 0.5s ease,
+		transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hud.revealed {
+	opacity: 1;
+	transform: translateX(0);
+}
+.hud-row {
+	background: rgba(0, 0, 0, 0.45);
+	color: #fff;
+	padding: 6px 12px;
+	border-radius: 10px;
+	backdrop-filter: blur(8px);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 140px;
+}
+.hud-row .label {
+	opacity: 0.7;
+	font-size: 12px;
+}
+.hud-row .value {
+	font-variant-numeric: tabular-nums;
+	font-size: 16px;
+}
+.hud .combo {
+	color: #ffd54a;
+}
+.hud .combo.hot {
+	animation: comboPulse 0.25s ease-out;
+}
+@keyframes comboPulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.2);
+		color: #ff8a65;
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* 📱 Compact HUD on small screens — full-width strip across the top */
+@media (max-width: 640px) {
+	.hud {
+		top: 6px;
+		left: 6px;
+		/* Leave room on the right for the theme + sound toggles so they
+                   don't get covered by the score strip. */
+		right: 88px;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 4px;
+		font-size: 11px;
+	}
+	.hud-row {
+		min-width: 0;
+		padding: 3px 7px;
+		gap: 4px;
+		flex: 1 1 auto;
+	}
+	.hud-row .label {
+		font-size: 10px;
+	}
+	.hud-row .value {
+		font-size: 12px;
+	}
+	.sound-toggle,
+	.theme-toggle {
+		width: 34px;
+		height: 34px;
+		font-size: 16px;
+	}
+	.sound-toggle {
+		right: 56px;
+	}
+}
+
+/* 📲 Install (PWA) button — only shown after `beforeinstallprompt` fires */
+.install-btn {
+	position: fixed;
+	top: 14px;
+	right: 116px;
+	padding: 8px 14px 8px 12px;
+	border-radius: 999px;
+	border: none;
+	background: linear-gradient(135deg, #66bb6a, #2e7d32);
+	color: #fff;
+	font-weight: 700;
+	cursor: pointer;
+	font-size: 13px;
+	line-height: 1;
+	z-index: 60;
+	display: none;
+	box-shadow:
+		0 4px 14px rgba(46, 125, 50, 0.45),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+	transition:
+		transform 0.18s ease,
+		box-shadow 0.18s ease,
+		filter 0.18s ease;
+	white-space: nowrap;
+}
+.install-btn.show {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+.install-btn:hover {
+	transform: translateY(-1px);
+	box-shadow:
+		0 6px 20px rgba(46, 125, 50, 0.6),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+	filter: brightness(1.05);
+}
+.install-btn:active {
+	transform: translateY(0);
+}
+@media (max-width: 640px) {
+	/* On mobile the top-right corner is crowded by HUD + toggles.
+               Move the install pill to bottom-center as a friendly CTA. */
+	.install-btn {
+		top: auto;
+		right: auto;
+		bottom: 16px;
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 10px 18px;
+		font-size: 14px;
+		box-shadow:
+			0 8px 24px rgba(46, 125, 50, 0.5),
+			inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+	}
+	.install-btn:hover {
+		transform: translateX(-50%) translateY(-1px);
+	}
+	.install-btn:active {
+		transform: translateX(-50%);
+	}
+}
+
+/* 📳 Screen shake */
+.shake {
+	animation: shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes shake {
+	10%,
+	90% {
+		transform: translate(-1px, 0);
+	}
+	20%,
+	80% {
+		transform: translate(2px, -1px);
+	}
+	30%,
+	50%,
+	70% {
+		transform: translate(-4px, 2px);
+	}
+	40%,
+	60% {
+		transform: translate(4px, -2px);
+	}
+}
+
+/* 🏆 Frenzy mode vibe */
+body.frenzy {
+	animation: frenzyBg 0.6s linear infinite;
+}
+@keyframes frenzyBg {
+	0% {
+		filter: hue-rotate(0deg);
+	}
+	100% {
+		filter: hue-rotate(360deg);
+	}
+}
+
+/* Golden fly glow */
+.fly.golden {
+	filter: drop-shadow(0 0 8px #ffd54a) drop-shadow(0 0 16px #ffab00);
+}
+.fly.angry {
+	filter: drop-shadow(0 0 6px #ff5252) drop-shadow(0 0 12px #d50000);
+}
+
+/* 🏁 Game-over modal */
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(6px);
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.4s ease;
+}
+.modal-backdrop.show {
+	opacity: 1;
+	pointer-events: auto;
+}
+.modal {
+	background: linear-gradient(135deg, #1b3b2f, #2c5364);
+	color: #fff;
+	border-radius: 24px;
+	padding: 28px 32px;
+	min-width: 320px;
+	max-width: 420px;
+	box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+	text-align: center;
+	transform: scale(0.7);
+	transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+	font-family: system-ui, -apple-system, sans-serif;
+}
+.modal-backdrop.show .modal {
+	transform: scale(1);
+}
+.modal h2 {
+	margin: 0 0 4px;
+	font-size: 28px;
+}
+.modal .subtitle {
+	margin: 0 0 18px;
+	opacity: 0.8;
+	font-size: 14px;
+}
+.modal .scores {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+	margin: 16px 0 18px;
+}
+.modal .scores .col {
+	background: rgba(0, 0, 0, 0.3);
+	padding: 14px 8px;
+	border-radius: 12px;
+}
+.modal .scores .col.winner {
+	background: rgba(255, 213, 74, 0.2);
+	box-shadow: inset 0 0 0 2px #ffd54a;
+}
+.modal .scores .label {
+	opacity: 0.7;
+	font-size: 12px;
+}
+.modal .scores .value {
+	font-size: 32px;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+	margin-top: 4px;
+}
+.modal .stats {
+	font-size: 13px;
+	opacity: 0.85;
+	margin-bottom: 18px;
+}
+.modal .actions {
+	display: flex;
+	gap: 10px;
+}
+.modal .actions button {
+	flex: 1;
+	padding: 12px;
+	border: none;
+	border-radius: 12px;
+	font-weight: 700;
+	cursor: pointer;
+	font-size: 14px;
+	transition:
+		transform 0.15s ease,
+		background 0.2s ease;
+}
+.modal .actions .btn-share {
+	background: #4caf50;
+	color: #fff;
+}
+.modal .actions .btn-replay {
+	background: rgba(255, 255, 255, 0.15);
+	color: #fff;
+}
+.modal .actions .btn-exit {
+	background: rgba(255, 255, 255, 0.08);
+	color: #fff;
+}
+.modal .actions button:hover {
+	transform: translateY(-2px);
+	filter: brightness(1.1);
+}
+
+/* 👅 Tongue overlay: full-viewport SVG */
+.tongue-overlay {
+	position: fixed;
+	inset: 0;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+	z-index: 49;
+}
+.tongue-path {
+	fill: none;
+	stroke: #ff5a8a;
+	stroke-width: 7;
+	stroke-linecap: round;
+	filter: drop-shadow(0 0 4px rgba(255, 90, 138, 0.6));
+	opacity: 0;
+}
+.tongue-tip {
+	fill: #ff5a8a;
+	filter: drop-shadow(0 0 4px rgba(255, 90, 138, 0.7));
+	opacity: 0;
+}
+
+h1 {
+	margin: 10px 0 5px;
+}
+p {
+	margin: 0 0 20px;
+	color: var(--muted);
+}
+
+input {
+	width: 100%;
+	padding: 14px;
+	border-radius: 14px;
+	border: 1px solid var(--border);
+	background: var(--input);
+	color: var(--text);
+	text-align: center;
+	outline: none;
+	transition: all 0.4s ease;
+}
+
+input:focus {
+	border-color: var(--accent);
+	transform: scale(1.02);
+}
+
+button {
+	width: 100%;
+	padding: 14px;
+	margin-top: 12px;
+	border-radius: 14px;
+	border: none;
+	background: var(--accent);
+	color: white;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+button:hover {
+	background: var(--accent-hover);
+	transform: translateY(-2px);
+}
+
+.result {
+	margin-top: 18px;
+	padding: 12px;
+	border-radius: 14px;
+	background: var(--result);
+	word-break: break-all;
+}
+
+.result a {
+	color: var(--accent);
+	text-decoration: none;
+	font-size: 13px;
+}
+
+.toast {
+	position: fixed;
+	bottom: 30px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--toast);
+	color: white;
+	padding: 10px 16px;
+	border-radius: 12px;
+	opacity: 0;
+	transition: 0.3s ease;
+	pointer-events: none;
+}
+
+.toast.show {
+	opacity: 1;
+	transform: translateX(-50%) translateY(-5px);
+}
