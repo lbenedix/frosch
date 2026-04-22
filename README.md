@@ -21,5 +21,3 @@ python3 -m http.server 8080
 ```
 
 Dann im Browser `http://localhost:8080` aufrufen.
-
----
