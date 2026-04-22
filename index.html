@@ -110,7 +110,23 @@
 
 <button class="theme-toggle" id="themeToggle" aria-label="Theme umschalten" title="Theme umschalten">🌓</button>
 <button class="sound-toggle" id="soundToggle" aria-label="Sound umschalten" title="Sound an/aus">🔇</button>
+<button class="mp-toggle" id="mpToggle" aria-label="Multiplayer anzeigen" aria-controls="mpPanel" aria-expanded="false" title="Multiplayer anzeigen">👥</button>
 <button class="install-btn" id="installBtn" title="Als App installieren">📲 Installieren</button>
+
+<!-- 👥 Multiplayer (PHP polling MVP) -->
+<div class="mp-panel" id="mpPanel" aria-hidden="true">
+    <div class="mp-title">👥 Multiplayer Beta</div>
+    <div class="mp-row">
+        <input id="mpName" type="text" placeholder="Name" maxlength="18" aria-label="Spielername">
+        <input id="mpRoom" type="text" placeholder="Raum" maxlength="12" aria-label="Raumcode">
+    </div>
+    <div class="mp-row">
+        <button id="mpJoin" type="button">Beitreten</button>
+        <button id="mpLeave" type="button">Verlassen</button>
+    </div>
+    <div class="mp-status" id="mpStatus">Nicht verbunden</div>
+    <ul class="mp-scores" id="mpScores"></ul>
+</div>
 
 
 <div id="toast" class="toast">Kopiert 🐸</div>
@@ -161,6 +177,7 @@
 <script src="./assets/js/affiliate.js" defer></script>
 <script src="./assets/js/pwa.js" defer></script>
 <script src="./assets/js/app.js" defer></script>
+<script src="./assets/js/multiplayer.js" defer></script>
 
 
 </body>

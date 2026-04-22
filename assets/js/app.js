@@ -542,6 +542,11 @@
 		game.timeUp = false;
 		updateHUD();
 		frogSays(`🎮 ${MATCH_DURATION}s — Mensch gegen Frosch! 🐸`, 1800);
+		window.dispatchEvent(
+			new CustomEvent("frog:match-start", {
+				detail: { duration: MATCH_DURATION },
+			}),
+		);
 	}
 
 	// ---- 🏁 End of match ----
@@ -587,6 +592,17 @@
 		if (youWin) sfx.golden();
 		else if (!tie) sfx.frenzy();
 		else sfx.combo(5);
+
+		window.dispatchEvent(
+			new CustomEvent("frog:match-end", {
+				detail: {
+					playerScore: p,
+					frogScore: f,
+					tie,
+					youWin,
+				},
+			}),
+		);
 
 		setTimeout(() => moBackdrop.classList.add("show"), 300);
 	}
@@ -725,6 +741,7 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 	// ---- Kill handlers ----
 	function killFly(fly, cx, cy, byPlayer) {
 		if (!fly.alive) return;
+		let playerDelta = 0;
 
 		// Before the game is unlocked: silently destroy, no scoring.
 		if (!game.started && !byPlayer) {
@@ -735,7 +752,9 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 		if (byPlayer) {
 			if (fly.type === "angry") {
 				// Stinging cost — more painful, breaks combo
+				const before = game.playerScore;
 				game.playerScore = Math.max(0, game.playerScore - 15);
+				playerDelta = game.playerScore - before;
 				scorePop(cx, cy, "-15 AUA!", "#ff5252");
 				resetCombo();
 				sfx.sting();
@@ -747,6 +766,7 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 				const mult = Math.min(game.combo, COMBO_CAP);
 				const pts = fly.points * mult;
 				game.playerScore += pts;
+				playerDelta = pts;
 				addCombo();
 				const tag = mult > 1 ? `+${pts} ×${mult}` : `+${pts}`;
 				scorePop(cx, cy, tag, fly.type === "golden" ? "#ffd54a" : "#8bc34a");
@@ -789,6 +809,17 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 		}
 		fly.destroy();
 		updateHUD();
+		if (byPlayer) {
+			window.dispatchEvent(
+				new CustomEvent("frog:player-swat", {
+					detail: {
+						delta: playerDelta,
+						flyType: fly.type,
+						totalScore: game.playerScore,
+					},
+				}),
+			);
+		}
 	}
 
 	// ---- Click to swat ----
