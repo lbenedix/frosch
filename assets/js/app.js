@@ -165,11 +165,13 @@
 	const FROG_ATTACK_RATE = 3.0; // strikes per second when fly in range
 	// 🎯 Combo multiplier is capped so the player can't run away with the score
 	const COMBO_CAP = 5;
+	const FROG_UNLOCK_CLICKS = 5;
 
 	let mouseX = -9999,
 		mouseY = -9999,
 		mouseActive = false;
 	let handActive = false;
+	let frogInteractCount = 0;
 
 	window.addEventListener(
 		"mousemove",
@@ -521,6 +523,7 @@
 	// ---- 🤫 Secret unlock: first swat reveals the game ----
 	function startGame() {
 		if (game.started) return;
+		frogInteractCount = 0;
 		game.started = true;
 		game.everStarted = true; // skip the discovery delay on subsequent rounds
 		startedAt = elapsed; // difficulty ramp begins now
@@ -618,6 +621,7 @@
 		document.body.classList.remove("frenzy");
 		startedAt = elapsed; // reset difficulty ramp
 		spawnTimer = 0;
+		frogInteractCount = 0;
 		moBackdrop.classList.remove("show");
 		updateHUD();
 		// Spawn a starter fly
@@ -652,6 +656,7 @@
 		game.frenzy = false;
 		game.frenzyTimer = 0;
 		spawnTimer = 0;
+		frogInteractCount = 0;
 		// Hide game UI, restore affiliate UI
 		moBackdrop.classList.remove("show");
 		hudEl.classList.remove("revealed");
@@ -822,20 +827,20 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 	}
 	function spawnFlyOnFrogInteract() {
 		if (game.started || game.timeUp) return;
+		frogInteractCount += 1;
+		if (frogInteractCount >= FROG_UNLOCK_CLICKS) {
+			startGame();
+			return;
+		}
 		const aliveCount = game.flies.filter(
 			(f) => f.alive && !f.beingEaten,
 		).length;
 		if (aliveCount > 0) return;
 		game.flies.push(new Fly("normal"));
 	}
-	frogScene?.addEventListener("click", spawnFlyOnFrogInteract);
-	frogScene?.addEventListener(
-		"touchstart",
-		() => {
-			spawnFlyOnFrogInteract();
-		},
-		{ passive: true },
-	);
+	frogScene?.addEventListener("pointerdown", spawnFlyOnFrogInteract, {
+		passive: true,
+	});
 	window.addEventListener("click", (e) => {
 		trySwat(e.clientX, e.clientY);
 	});
