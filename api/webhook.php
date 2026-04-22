@@ -8,12 +8,14 @@ function logMessage(string $message): void {
     file_put_contents($logFile, "[$timestamp] $message" . PHP_EOL, FILE_APPEND);
 }
 
-logMessage("Webhook triggered. Method: " . $_SERVER['REQUEST_METHOD'] . ", IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+$secret = getenv('WEBHOOK_SECRET') ?: 'change-me';
+$providedToken = $_SERVER['HTTP_X_WEBHOOK_SECRET'] ?? $_GET['secret'] ?? '';
 
-echo "Hello World!";
-logMessage("Response sent.");
+if (!hash_equals($secret, $providedToken)) {
+    http_response_code(401);
+    echo "Unauthorized";
+    exit;
+}
 
 $command = "/root/update.sh";
-logMessage("Executing command: $command");
 $output = shell_exec($command . " 2>&1");
-logMessage("Command output: " . ($output !== null ? trim($output) : '(null - command may have failed or produced no output)'));
