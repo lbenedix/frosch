@@ -1,6 +1,6 @@
 <?php
 
-$logFile = __DIR__ . '/tmp/webhook.log';
+$logFile = '/tmp/webhook.log';
 
 function logMessage(string $message): void {
     global $logFile;
