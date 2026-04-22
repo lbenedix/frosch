@@ -820,6 +820,22 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 		}
 		return false;
 	}
+	function spawnFlyOnFrogInteract() {
+		if (game.started || game.timeUp) return;
+		const aliveCount = game.flies.filter(
+			(f) => f.alive && !f.beingEaten,
+		).length;
+		if (aliveCount > 0) return;
+		game.flies.push(new Fly("normal"));
+	}
+	frogScene?.addEventListener("click", spawnFlyOnFrogInteract);
+	frogScene?.addEventListener(
+		"touchstart",
+		() => {
+			spawnFlyOnFrogInteract();
+		},
+		{ passive: true },
+	);
 	window.addEventListener("click", (e) => {
 		trySwat(e.clientX, e.clientY);
 	});
@@ -1034,7 +1050,7 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 		}
 	});
 
-	// ---- Pupils track nearest fly ----
+	// ---- Pupils track nearest fly (or mouse if no fly is visible) ----
 	function updatePupils() {
 		if (!pupilL || !pupilR) return;
 		const m = mouthPos();
@@ -1043,7 +1059,14 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 			found = false,
 			bestD = Infinity;
 		for (const f of game.flies) {
-			if (!f.alive) continue;
+			if (!f.alive || f.beingEaten || f.opacity < 0.3) continue;
+			if (
+				f.x < 0 ||
+				f.x > window.innerWidth ||
+				f.y < 0 ||
+				f.y > window.innerHeight
+			)
+				continue;
 			const d = Math.hypot(f.x - m.x, f.y - m.y);
 			if (d < bestD) {
 				bestD = d;
@@ -1051,6 +1074,11 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 				ty = f.y;
 				found = true;
 			}
+		}
+		if (!found && mouseActive) {
+			tx = mouseX;
+			ty = mouseY;
+			found = true;
 		}
 		const sceneRect = frogScene.getBoundingClientRect();
 		const scl = sceneRect.width / 300;
