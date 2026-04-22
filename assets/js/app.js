@@ -141,6 +141,7 @@
 		timeLeft: 60,
 		timeUp: false,
 		lastLeader: null,
+		lastStingAt: -1e9,
 	};
 	const MATCH_DURATION = 30; // seconds
 	bestEl.textContent = game.best;
@@ -166,12 +167,17 @@
 	// 🎯 Combo multiplier is capped so the player can't run away with the score
 	const COMBO_CAP = 5;
 	const FROG_UNLOCK_CLICKS = 5;
+	const BEE_STING_RADIUS = isTouch ? 38 : 30;
+	const BEE_STING_DAMAGE = 8;
+	const BEE_STING_COOLDOWN = 1.35;
+	const BEE_START_GRACE = 0.9;
 
 	let mouseX = -9999,
 		mouseY = -9999,
 		mouseActive = false;
 	let handActive = false;
 	let frogInteractCount = 0;
+	let touchMouseTimer = 0;
 
 	window.addEventListener(
 		"mousemove",
@@ -185,6 +191,20 @@
 	window.addEventListener("mouseleave", () => {
 		mouseActive = false;
 	});
+	window.addEventListener(
+		"touchmove",
+		(e) => {
+			if (!e.touches.length) return;
+			mouseX = e.touches[0].clientX;
+			mouseY = e.touches[0].clientY;
+			mouseActive = true;
+			clearTimeout(touchMouseTimer);
+			touchMouseTimer = window.setTimeout(() => {
+				mouseActive = false;
+			}, 220);
+		},
+		{ passive: true },
+	);
 
 	// ---- Helpers ----
 	function mouthPos() {
@@ -220,6 +240,7 @@
 			this.angle = 0;
 			this.opacity = 1;
 			this.scale = 1;
+			this.stingCooldown = 0;
 			// 🔍 Random size — small flies are harder to swat → worth more points
 			this.sizeScale = 0.7 + Math.random() * 0.6; // 0.7 .. 1.3
 			this.el = document.createElement("div");
@@ -246,6 +267,7 @@
 			}
 			this.pickTarget();
 			this.maxSpeed = type === "golden" ? 560 : type === "angry" ? 520 : 420;
+			if (this.type === "angry") this.stingCooldown = 0.45 + Math.random() * 0.5;
 			// Smaller flies → small bonus; bigger flies → small malus (size 0.7 → +30%, 1.3 → -30%)
 			const sizeBonus = 1 + (1 - this.sizeScale);
 			// Player base points (will be multiplied by combo, capped)
@@ -270,6 +292,7 @@
 		}
 		update(dt) {
 			if (!this.alive || this.beingEaten) return;
+			this.stingCooldown = Math.max(0, this.stingCooldown - dt);
 			const dx = this.tx - this.x,
 				dy = this.ty - this.y;
 			this.vx += dx * 2.0 * dt;
@@ -286,6 +309,7 @@
 				if (adl < 400) {
 					this.vx += (adx / adl) * 650 * dt;
 					this.vy += (ady / adl) * 650 * dt;
+					if (adl < BEE_STING_RADIUS) stingPlayer(this);
 				}
 			} else if (mouseActive) {
 				const mdx = this.x - mouseX,
@@ -458,6 +482,12 @@
 		document.body.classList.add("shake");
 		setTimeout(() => document.body.classList.remove("shake"), 400);
 	}
+	function beeHitFlash() {
+		document.body.classList.remove("bee-hit");
+		void document.body.offsetWidth;
+		document.body.classList.add("bee-hit");
+		setTimeout(() => document.body.classList.remove("bee-hit"), 240);
+	}
 
 	// ---- Splat visual ----
 	function splatAt(x, y, emoji = "💥") {
@@ -519,6 +549,27 @@
 		game.combo = 1;
 		comboEl.classList.remove("hot");
 	}
+	function stingPlayer(fly) {
+		if (!game.started || game.timeUp || !fly.alive || fly.beingEaten) return;
+		const sinceStart = MATCH_DURATION - game.timeLeft;
+		if (sinceStart < BEE_START_GRACE) return;
+		if (fly.stingCooldown > 0) return;
+		// A short global lock prevents overlapping stings from stacked bees.
+		if (performance.now() - game.lastStingAt < 260) return;
+
+		fly.stingCooldown = BEE_STING_COOLDOWN + Math.random() * 0.45;
+		game.lastStingAt = performance.now();
+		game.playerScore = Math.max(0, game.playerScore - BEE_STING_DAMAGE);
+		resetCombo();
+
+		scorePop(fly.x, fly.y, `-${BEE_STING_DAMAGE} STICH!`, "#ff5252");
+		spawnParticles(fly.x, fly.y, 8, ["#ff5252", "#ffb300", "#ff8a65"]);
+		splatAt(fly.x, fly.y, "⚡");
+		sfx.sting();
+		beeHitFlash();
+		if (Math.random() < 0.32) frogSays("Autsch! Bienen-Alarm! 🐝", 900);
+		updateHUD();
+	}
 
 	// ---- 🤫 Secret unlock: first swat reveals the game ----
 	function startGame() {
@@ -543,6 +594,7 @@
 		game.bestCombo = 1;
 		game.timeLeft = MATCH_DURATION;
 		game.timeUp = false;
+		game.lastStingAt = -1e9;
 		updateHUD();
 		frogSays(`🎮 ${MATCH_DURATION}s — Mensch gegen Frosch! 🐸`, 1800);
 	}
@@ -618,6 +670,7 @@
 		game.timeUp = false;
 		game.frenzy = false;
 		game.frenzyTimer = 0;
+		game.lastStingAt = -1e9;
 		document.body.classList.remove("frenzy");
 		startedAt = elapsed; // reset difficulty ramp
 		spawnTimer = 0;
@@ -655,6 +708,7 @@
 		game.lastLeader = null;
 		game.frenzy = false;
 		game.frenzyTimer = 0;
+		game.lastStingAt = -1e9;
 		spawnTimer = 0;
 		frogInteractCount = 0;
 		// Hide game UI, restore affiliate UI
@@ -847,7 +901,15 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 	window.addEventListener(
 		"touchstart",
 		(e) => {
-			if (e.touches.length) trySwat(e.touches[0].clientX, e.touches[0].clientY);
+			if (!e.touches.length) return;
+			mouseX = e.touches[0].clientX;
+			mouseY = e.touches[0].clientY;
+			mouseActive = true;
+			clearTimeout(touchMouseTimer);
+			touchMouseTimer = window.setTimeout(() => {
+				mouseActive = false;
+			}, 220);
+			trySwat(mouseX, mouseY);
 		},
 		{ passive: true },
 	);
@@ -1016,7 +1078,7 @@ Schaffst du mehr? 👉 ${shareUrl}`;
 			} else if (game.started) {
 				const sinceStart = elapsed - startedAt;
 				if (r < 0.07) type = "golden";
-				else if (sinceStart > 12 && r < 0.22) type = "angry";
+				else if (sinceStart > 8 && r < 0.28) type = "angry";
 			}
 			game.flies.push(new Fly(type));
 			spawnTimer = game.frenzy ? 0.25 : 0.9 + Math.random() * 1.8;

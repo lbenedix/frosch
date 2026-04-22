@@ -51,6 +51,28 @@ body {
 	overflow: hidden;
 }
 
+/* Brief damage tint when the bee lands a sting. */
+body.bee-hit::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 120;
+	background: radial-gradient(circle at center, rgba(255, 82, 82, 0.2), rgba(213, 0, 0, 0.08));
+	animation: beeHitFlash 0.24s ease-out;
+}
+@keyframes beeHitFlash {
+	0% {
+		opacity: 0;
+	}
+	35% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
 /* 👋 Waving-hand cursor appears only when the fly is within reach */
 body.fly-nearby {
 	cursor:
@@ -588,6 +610,18 @@ body.frenzy {
 }
 .fly.angry {
 	filter: drop-shadow(0 0 6px #ff5252) drop-shadow(0 0 12px #d50000);
+	animation: beeBuzz 0.18s linear infinite;
+}
+@keyframes beeBuzz {
+	0% {
+		filter: drop-shadow(0 0 5px #ff6b6b) drop-shadow(0 0 10px #d50000);
+	}
+	50% {
+		filter: drop-shadow(0 0 9px #ff5252) drop-shadow(0 0 16px #ff1744);
+	}
+	100% {
+		filter: drop-shadow(0 0 5px #ff6b6b) drop-shadow(0 0 10px #d50000);
+	}
 }
 
 /* 🏁 Game-over modal */
